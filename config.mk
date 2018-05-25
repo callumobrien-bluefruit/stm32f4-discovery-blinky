@@ -7,7 +7,7 @@ STM_SRC = $(STM_DIR)/Libraries/STM32F4xx_StdPeriph_Driver/src
  # Look in $(STM_SRC) if a source file cannot be found
 vpath %.c $(STM_SRC)
 
-SRCS = system_stm32f4xx.c stm32f4xx_rcc.c stm32f4xx_gpio.c main.c \
+SRCS = system_stm32f4xx.c stm32f4xx_rcc.c stm32f4xx_tim.c stm32f4xx_gpio.c main.c misc.c \
 	   $(STM_DIR)/Libraries/CMSIS/ST/STM32F4xx/Source/Templates/TrueSTUDIO/startup_stm32f4xx.s
 
 COMPILER_TOOLCHAIN_DIR = /usr/bin

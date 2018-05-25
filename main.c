@@ -1,28 +1,29 @@
 #include "stm32f4xx.h"
 #include "stm32f4_discovery.h"
+#include "stm32f4xx_gpio.h"
+#include "stm32f4xx_rcc.h"
+#include "stm32f4xx_tim.h"
+#include "misc.h"
 
-#define PAUSE 4000000L
-
-GPIO_InitTypeDef gpioInitOptions;
-
-static void setupLed(void);
-static void pause(uint32_t);
+void setupLed(void);
+void setupTimer(void);
+void enableTimerInterrupt(void);
 
 int
 main()
 {
    setupLed();
+   setupTimer();
 
    while (1)
-   {
-      GPIO_ToggleBits(GPIOD, LED4_PIN);
-      pause(PAUSE);
-   }
+      ;
 }
 
-static void 
+void 
 setupLed()
 {
+   GPIO_InitTypeDef gpioInitOptions;
+
    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
    
    gpioInitOptions.GPIO_Pin   = LED4_PIN;
@@ -32,12 +33,47 @@ setupLed()
    gpioInitOptions.GPIO_PuPd  = GPIO_PuPd_NOPULL;
 
    GPIO_Init(GPIOD, &gpioInitOptions);
+   GPIO_ResetBits(GPIOD, LED4_PIN);
 }
 
-static void
-pause(uint32_t count)
+void
+setupTimer()
 {
-   for (uint32_t i = 0; i < count; i++)
-      ;
+   TIM_TimeBaseInitTypeDef timerInitOptions;
+
+   RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
+
+   timerInitOptions.TIM_Prescaler         = 40000;
+   timerInitOptions.TIM_CounterMode       = TIM_CounterMode_Up;
+   timerInitOptions.TIM_Period            = 500;
+   timerInitOptions.TIM_ClockDivision     = TIM_CKD_DIV1;
+   timerInitOptions.TIM_RepetitionCounter = 0;
+
+   TIM_TimeBaseInit(TIM2, &timerInitOptions);
+   TIM_Cmd(TIM2, ENABLE);
+
+   TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+}
+
+void
+enableTimerInterrupt()
+{
+   NVIC_InitTypeDef nvicInitOptions;
+
+   nvicInitOptions.NVIC_IRQChannel = TIM2_IRQn;
+   nvicInitOptions.NVIC_IRQChannelPreemptionPriority = 0;
+   nvicInitOptions.NVIC_IRQChannelSubPriority = 1;
+   nvicInitOptions.NVIC_IRQChannelCmd = ENABLE;
+
+   NVIC_Init(&nvicInitOptions);
+}
+
+void
+TIM2_IRQHandler()
+{
+   if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
+      TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+      GPIO_ToggleBits(GPIOD, LED4_PIN);
+   }
 }
 
