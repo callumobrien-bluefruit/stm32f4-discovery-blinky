@@ -6,17 +6,25 @@
 #include "misc.h"
 
 void setupLed(void);
-void setupTimer(void);
-void enableTimerInterrupt(void);
+void setupInterrupt(void);
 
 int
 main()
 {
    setupLed();
-   setupTimer();
+   setupInterrupt();
 
    while (1)
       ;
+}
+
+void
+TIM2_IRQHandler()
+{
+   if (TIM_GetITStatus(TIM2, TIM_IT_Update)) {
+      GPIO_ToggleBits(GPIOD, LED4_PIN);
+      TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+   }
 }
 
 void 
@@ -37,43 +45,28 @@ setupLed()
 }
 
 void
-setupTimer()
+setupInterrupt()
 {
    TIM_TimeBaseInitTypeDef timerInitOptions;
+   NVIC_InitTypeDef nvicInitOptions;
 
    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
 
-   timerInitOptions.TIM_Prescaler         = 40000;
+   timerInitOptions.TIM_Prescaler         = 4199;
    timerInitOptions.TIM_CounterMode       = TIM_CounterMode_Up;
-   timerInitOptions.TIM_Period            = 500;
+   timerInitOptions.TIM_Period            = 999;
    timerInitOptions.TIM_ClockDivision     = TIM_CKD_DIV1;
    timerInitOptions.TIM_RepetitionCounter = 0;
 
    TIM_TimeBaseInit(TIM2, &timerInitOptions);
+   TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
    TIM_Cmd(TIM2, ENABLE);
 
-   TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
-}
-
-void
-enableTimerInterrupt()
-{
-   NVIC_InitTypeDef nvicInitOptions;
-
-   nvicInitOptions.NVIC_IRQChannel = TIM2_IRQn;
+   nvicInitOptions.NVIC_IRQChannel                   = TIM2_IRQn;
    nvicInitOptions.NVIC_IRQChannelPreemptionPriority = 0;
-   nvicInitOptions.NVIC_IRQChannelSubPriority = 1;
-   nvicInitOptions.NVIC_IRQChannelCmd = ENABLE;
+   nvicInitOptions.NVIC_IRQChannelSubPriority        = 0;
+   nvicInitOptions.NVIC_IRQChannelCmd                = ENABLE;
 
    NVIC_Init(&nvicInitOptions);
-}
-
-void
-TIM2_IRQHandler()
-{
-   if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
-      TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
-      GPIO_ToggleBits(GPIOD, LED4_PIN);
-   }
 }
 

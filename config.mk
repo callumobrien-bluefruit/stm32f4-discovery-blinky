@@ -1,7 +1,7 @@
 PROJ_NAME=blinky
 VERSION=0.1.0
 
-STM_DIR = ../STM32F4-Discovery_FW_V1.1.0
+STM_DIR = STM32F4-Discovery_FW_V1.1.0
 STM_SRC = $(STM_DIR)/Libraries/STM32F4xx_StdPeriph_Driver/src
 
  # Look in $(STM_SRC) if a source file cannot be found

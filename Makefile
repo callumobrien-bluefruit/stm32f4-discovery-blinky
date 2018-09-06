@@ -1,7 +1,5 @@
 include config.mk
 
-.PHONY: all options $(PROJ_NAME) clean dist flash
-
 all: options $(PROJ_NAME)
 
 options:
@@ -38,4 +36,6 @@ dist: clean
 
 flash: $(PROJ_NAME).bin
 	$(ST_FLASH) write $(PROJ_NAME).bin 0x8000000
+
+.PHONY: all options $(PROJ_NAME) clean dist flash
 
