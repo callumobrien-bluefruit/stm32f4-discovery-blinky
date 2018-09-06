@@ -1,5 +1,8 @@
 include config.mk
 
+# Look in $(STM_SRC) if a source file cannot be found
+vpath %.c $(STM_SRC)
+
 all: options $(PROJ_NAME)
 
 options:
@@ -17,7 +20,7 @@ options:
 $(PROJ_NAME): $(PROJ_NAME).elf $(PROJ_NAME).hex $(PROJ_NAME).bin
 
 $(PROJ_NAME).elf: $(SRCS)
-	$(CC) $(CFLAGS) $(LFLAGS) $^ -o $@ 
+	$(CC) $(CFLAGS) $(LFLAGS) $^ -o $@
 
 $(PROJ_NAME).hex: $(PROJ_NAME).elf
 	$(OBJCOPY) -O ihex $(PROJ_NAME).elf   $(PROJ_NAME).hex
@@ -38,4 +41,3 @@ flash: $(PROJ_NAME).bin
 	$(ST_FLASH) write $(PROJ_NAME).bin 0x8000000
 
 .PHONY: all options $(PROJ_NAME) clean dist flash
-
